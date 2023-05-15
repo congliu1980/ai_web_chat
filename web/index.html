@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<title></title>
+	<link id='icon' rel="shortcut icon" href="/web/lib/mdl.png">
+	<link rel="stylesheet" href="/web/lib/mdl/material-icons.css">
+	<link id='material_css' rel="stylesheet" href="/web/lib/mdl/material.css">
+	<link rel="stylesheet" href="/web/lib/mdl/Roboto.css" type="text/css">
+	<script src="/web/lib/mdl/material.min.js"></script>
+	<script src="/web/lib/jswrt/py_full.js"></script>
+	<script src="/web/lib/marked.min.js"></script>
+	<link rel="stylesheet" href="/web/lib/highlight/default.min.css">
+	<link rel="stylesheet" href="/web/lib/highlight/base16/solarized-light.min.css">
+	<script src="/web/lib/highlight/highlight.min.js"></script>
+	<script src="/web/lib/audio.js"></script>
+
+	<script>
+		function stdout(text) {
+			if (text.trim()!='') console.log(text)
+		}
+		function stderr(text) {
+			if (text.trim()!='') console.error(text)
+		}
+		function run(src) {
+			let rt = create_jswrt()
+			rt.start_and_run(null, stdout, stderr, src, null)
+		}
+		function start() {
+			fetch('/web/main.py').then(res => {
+				if (res.status != 200) {
+					console.error(res.statusText)
+					return
+				}
+				res.text()
+					.then(run)
+					.catch(stderr)
+			})
+		}
+	</script>
+</head>
+
+<body onload="start()" bgcolor="#EEEEEE">
+</body>
+</html>
