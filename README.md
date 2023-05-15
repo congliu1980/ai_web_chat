@@ -4,7 +4,7 @@
 
 - 具有语音识别和语音合成功能的AI聊天机器人
 
-<img src=1.png width=310 /> <img src=2.png width=300 />
+<img src=1.png width=310 /> <img src=2.png width=320 />
 
 ## 本项目使用了以下开源项目
 - 对话式语言模型: 清华大学的[ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B) 或 [Vicuna](https://github.com/lm-sys/FastChat)
