@@ -1,5 +1,4 @@
 
-PORT = 8008
 API_KEY = '1234'
 SERVER_API_KEY = '123456' # ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=6))
 
@@ -187,7 +186,8 @@ def stop_server():
 	return '服务器正在关闭'
 rpc_registry['stop_server'] = (SERVER_API_KEY, stop_server)
 
-gateway_addr = sys.argv[1] if len(sys.argv)==2 else None
+port = int(sys.argv[1]) if len(sys.argv)>=2 else 8000
+gateway_addr = sys.argv[2] if len(sys.argv)>=3 else None
 if gateway_addr is not None:
 	gateway.start_worker(gateway_addr, SERVER_API_KEY, 'audio_to_text', handle_rpc)
 	gateway.start_worker(gateway_addr, SERVER_API_KEY, 'chat', handle_rpc)
@@ -206,8 +206,8 @@ if gateway_addr is not None:
 	# rpc_registry['audio_to_text'] = (API_KEY, audio_to_text_api2)
 	# rpc_registry['chat'] = (API_KEY, chat_api2)	
 
-print(f'网页服务器端口: {PORT}, 服务器API_KEY: {SERVER_API_KEY}')
-start_server_(PORT, 100)
+print(f'网页服务器端口: {port}, 服务器API_KEY: {SERVER_API_KEY}')
+start_server_(port, 100)
 print('网页服务器已关闭')
 server_stopped = True
 if gateway_addr is not None:
