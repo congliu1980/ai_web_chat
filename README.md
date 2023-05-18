@@ -34,11 +34,18 @@
 
 ## 使用说明
 
-1.  python -m serv
+1.  python -m serv [本地服务器端口] [外网门户服务器地址]
     - 启动需要时间：启动[Whisper](https://github.com/openai/whisper)和[ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B)
     - 第一次启动需要下载[Whisper](https://github.com/openai/whisper)和[ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B)的模型，可能需要较长时间
     - 当显示 “启动网页服务器”，表示启动完毕
-2.  在浏览器中输入 http://localhost:8000
+    - 本地启动服务器能在外网被访问
+        - python3 -m serv # 默认端口8000
+        - sudo python3 -m serv 80
+    - 本地启动服务器不能在外网被访问，需要同时启动外网门户服务器
+        - 外网门户服务器(no-gpu-server.com) sudo python3 -m serv 80
+        - 本地带GPU的服务器 python3 -m serv 8000 http://no-gpu-server.com:80
+
+2.  在浏览器中输入 http://服务器地址[:端口] 如 http://localhost:8000 或 http://no-gpu-server.com:80
     - 第一次使用，需要同意浏览器使用麦克风
     - 如果从其他电脑的浏览器访问，需要让浏览器信任服务器所在的网站，才能使浏览器允许使用麦克风
         - 例如，对于chrome浏览器，需要在地址栏输入 chrome://flags/#unsafely-treat-insecure-origin-as-secure
