@@ -1,5 +1,8 @@
 
-import json, time, _thread
+import json, time, _thread, sys
+
+def _time():
+	return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 def _ajax_write(socket_file, path, data):
 	data = json.dumps(data).replace('+','%2b').replace(' ','+')
@@ -74,7 +77,7 @@ def gateway_thread(data, client_addr, server_socket_file, server_api_key, heartb
 		_ajax_write(server_socket_file, '', {'error': f'"{func_name}" is token by client "{rpc_registry[func_name][0]}"'})
 		return
 	_ajax_write(server_socket_file, '', {'reply':'OK'})
-	print(f'Gateway worker accepted: ("{client_addr}","{func_name}")')
+	print(f'Gateway worker accepted: ("{client_addr}","{func_name}") {_time()}')
 	queue = []
 	rpc_registry[func_name] = (client_addr, queue)
 	heartbeat_time = time.time()
@@ -83,32 +86,36 @@ def gateway_thread(data, client_addr, server_socket_file, server_api_key, heartb
 		while True:
 			if len(queue)==0:
 				if queue is not rpc_registry[func_name][1]:
-					print(f'Gateway worker updated: ("{client_addr}","{func_name}")')
+					print(f'Gateway worker updated: ("{client_addr}","{func_name}") {_time()}')
 					break
 				time.sleep(.1)
 				if time.time() - heartbeat_time > heartbeat_interval:
 					heartbeat_time = time.time()
 					_ajax_write(server_socket_file, '', heartbeat_data)
+					# print('_', end='')
+					# sys.stdout.flush()
 					_ajax_read(server_socket_file)
+					# print('.', end='')
+					# sys.stdout.flush()
 				continue
 			task = queue[0]
 			data = task[0]
-			_ajax_write(server_socket_file, '', data)
+			_ajax_write(server_socket_file, '', data)			
 			data = _ajax_read(server_socket_file)
 			task[:] = [data, True]
 			queue.pop(0)
 	except:
 		for task in queue:
 			task[:] = [{'error':'Gateway worker exception'}, True]
-		print(f'Gateway worker exception: ("{client_addr}","{func_name}")')
-		del rpc_registry[func_name]
+		print(f'Gateway worker exception: ("{client_addr}","{func_name}") {_time()}')
+		if queue is rpc_registry[func_name][1]:
+			del rpc_registry[func_name]
 
 
 # gateway worker
 _worker_status = {}
 
 def worker_thread_(gateway_addr, gateway_api_key, func_name, handle_rpc):
-	assert (gateway_addr, func_name) not in _worker_status
 	import socket
 	_worker_status[(gateway_addr, func_name)] = True
 	while _worker_status[(gateway_addr, func_name)]:
@@ -121,6 +128,7 @@ def worker_thread_(gateway_addr, gateway_api_key, func_name, handle_rpc):
 			server_addr, port = (server_addr.split(':', 1)) if ':' in server_addr else (server_addr, 80)
 			port = int(port)
 			remote_ip = socket.gethostbyname(server_addr)
+			worker_socket.settimeout(30)
 			worker_socket.connect((remote_ip , port))
 			worker_socket_file = worker_socket.makefile('rwb')
 			try:
@@ -128,10 +136,10 @@ def worker_thread_(gateway_addr, gateway_api_key, func_name, handle_rpc):
 				_ajax_write(worker_socket_file, 'gateway', data)
 				data = _ajax_read(worker_socket_file)
 				if 'error' in data:
-					print(f'Fail to start gateway worker: ("{gateway_addr}","{func_name})"')
+					print(f'Fail to start gateway worker: ("{gateway_addr}","{func_name})" {_time()}')
 					print(data['error'])
 					break
-				print(f'Gateway worker started: ("{gateway_addr}","{func_name}")')
+				print(f'Gateway worker started: ("{gateway_addr}","{func_name}") {_time()}')
 				while _worker_status[(gateway_addr, func_name)]:
 					data = _ajax_read(worker_socket_file)
 					if 'func_name' in data and data['func_name']=='--heartbeat--':
@@ -144,14 +152,17 @@ def worker_thread_(gateway_addr, gateway_api_key, func_name, handle_rpc):
 				worker_socket.close()
 		except KeyboardInterrupt:
 			break
+		except TimeoutError:
+			time.sleep(1)
+		except ConnectionRefusedError:
+			time.sleep(1)
 		except:
+			print(f'Exception on gateway worker: ("{gateway_addr}","{func_name}") {_time()}')
 			import traceback
-			print(f'Exception on gateway worker: ("{gateway_addr}","{func_name}")')
 			traceback.print_exc()
 			del traceback
 			time.sleep(1)
-	del _worker_status[(gateway_addr, func_name)]
-	print(f'Gateway worker stopped: ("{gateway_addr}","{func_name}")')
+	print(f'Gateway worker stopped: ("{gateway_addr}","{func_name}") {_time()}')
 
 def start_worker(gateway_addr, gateway_api_key, func_name, handle_rpc):
 	_thread.start_new_thread(worker_thread_, (gateway_addr, gateway_api_key, func_name, handle_rpc))
