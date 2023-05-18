@@ -1,4 +1,4 @@
-# 网站不被chrome信任，需要填入 http://ecw.sysu.edu.cn:8002 然后Enable
+# 网站不被chrome信任，需要填入 http://localhost:8000 然后Enable
 # chrome://flags/#unsafely-treat-insecure-origin-as-secure
 
 import mdl
