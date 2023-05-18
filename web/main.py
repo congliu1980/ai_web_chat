@@ -143,10 +143,13 @@ def chat_page():
 		if query_id not in prev_text_line:
 			prev_text_line[query_id] = 0
 		text = text.split('\n')
+		text = [t.strip() for t in text]
+		text = [t for t in text if t!='']
 		if done:
-			text, prev_text_line[query_id] = text[prev_text_line[query_id]:], 0
-		elif (len(text)-1)>prev_text_line[query_id]:
-			text, prev_text_line[query_id] = text[prev_text_line[query_id]:-2], len(text)-1
+			text, prev_text_line[query_id] = text[prev_text_line[query_id]:], 10000
+		else:
+			text = text[prev_text_line[query_id]:-1]
+			prev_text_line[query_id] = prev_text_line[query_id] + len(text)
 		else:
 			text = []
 		for t in text:
@@ -163,6 +166,7 @@ def chat_page():
 		max_length = dialog_data['最长对话长度']['value']
 		temperature = dialog_data['回答随机性']['value']
 		top_p = dialog_data['回答置信度']['value']
+		len_message = len(messages)
 		params = {'messages': messages, 'max_length':max_length, 'temperature':temperature, 'top_p':top_p}
 		chat_id = -1
 		canceled = False
@@ -176,7 +180,7 @@ def chat_page():
 			chat_id = chat_['chat_id']
 			if (chat_ is None) or ('exception' in chat_):
 				if 'exception' in chat_:
-					info_dialog.show(chat_['exception'], f"服务器发生异常: {chat_['exception']}")
+					info_dialog.show(chat_['exception'], '服务器发生异常')
 				break
 			conv = []
 			messages = chat_['messages']
@@ -197,13 +201,13 @@ def chat_page():
 			else:
 				has_new = (not canceled)
 				if (has_new and (len(conv)>0)) and (conv[0][1] is not None):
-					speech_synthesis(conv[0][1], query_id, False)
-					chat_container.replace_child(make_list(conv))
-				if chat_['done']:
-					if (has_new and (len(conv)>0)) and (conv[0][1] is not None):
+					if len(messages)>len_message:
+						speech_synthesis(conv[0][1], query_id, False)
+						chat_container.replace_child(make_list(conv))
+					if chat_['done']:
 						speech_synthesis(conv[0][1], query_id, True)
-					js.hljs.highlightAll()
-					break
+						js.hljs.highlightAll()
+						break
 				time.sleep(.1)
 			canceled = query_id!=next_query_id
 			query_ = canceled
