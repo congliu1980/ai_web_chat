@@ -38,10 +38,10 @@
     - 启动需要时间：启动[Whisper](https://github.com/openai/whisper)和[ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B)
     - 第一次启动需要下载[Whisper](https://github.com/openai/whisper)和[ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B)的模型，可能需要较长时间
     - 当显示 “启动网页服务器”，表示启动完毕
-    - 本地启动服务器能在外网被访问
+    - 本地服务器能在外网被访问
         - python3 -m serv # 默认端口8000
         - sudo python3 -m serv 80
-    - 本地启动服务器不能在外网被访问，需要同时启动外网门户服务器
+    - 本地服务器不能在外网被访问，需要同时启动外网门户服务器
         - 外网门户服务器(no-gpu-server.com) sudo python3 -m serv 80
         - 本地带GPU的服务器 python3 -m serv 8000 http://no-gpu-server.com:80
 
