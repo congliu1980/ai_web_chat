@@ -26,9 +26,11 @@ def handle_rpc(data):
 		if api_key_gt is not None and api_key_gt!=api_key:
 			return {'error': 'api_key' if api_key is None else f'错误的 API_KEY: {api_key}'}
 		else:
-			lock.acquire()
-			res = func(*argv, **kwargs)
-			lock.release()
+			try:
+				lock.acquire()
+				res = func(*argv, **kwargs)
+			finally:
+				lock.release()
 			return res
 	else:
 		return gateway.gateway_handle_rpc(data)
@@ -154,7 +156,7 @@ def chat_api(chat_id, query, params):
 		chat_queue_done.pop(i)
 		return chat_
 	i, chat_ = _chat_queue_find(chat_queue_waiting, chat_id)
-	if stream_stopped:
+	if stream_stopped and chat_ is not None:
 		chat_['stream_stopped'] = True
 	return chat_
 

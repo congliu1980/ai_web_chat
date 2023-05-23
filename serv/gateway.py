@@ -100,7 +100,7 @@ def gateway_thread(data, client_addr, server_socket_file, server_api_key, heartb
 				continue
 			task = queue[0]
 			data = task[0]
-			_ajax_write(server_socket_file, '', data)			
+			_ajax_write(server_socket_file, '', data)
 			data = _ajax_read(server_socket_file)
 			task[:] = [data, True]
 			queue.pop(0)
@@ -142,10 +142,16 @@ def worker_thread_(gateway_addr, gateway_api_key, func_name, handle_rpc):
 				print(f'Gateway worker started: ("{gateway_addr}","{func_name}") {_time()}')
 				while _worker_status[(gateway_addr, func_name)]:
 					data = _ajax_read(worker_socket_file)
+					if data is None:
+						continue
 					if 'func_name' in data and data['func_name']=='--heartbeat--':
 						data = {}
 					else:
-						data = handle_rpc(data)
+						try:
+							data = handle_rpc(data)
+						except Exception as ex:
+							from serv.lib.http_ import http_handle_ex_
+							data = {'error': http_handle_ex_(ex)}
 					_ajax_write(worker_socket_file, '', data)
 			finally:
 				worker_socket_file.close()
